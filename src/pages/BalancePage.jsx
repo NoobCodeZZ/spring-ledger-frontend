@@ -49,9 +49,9 @@ const BalancePage = () => {
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.message || typeof error.response?.data === 'string' ? error.response?.data : "Failed to fetch balance";
-      const status = error.response?.status ? ` (Status: ${error.response.status})` : '';
-      setError(msg + status);
-      toast.error(msg);
+      
+      setError(msg);
+      toast.error("Failed to fetch balance");
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ const BalancePage = () => {
 
         {error && (
           <div className="mt-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
-            <p className="font-bold">Error: {error}</p>
+            <p className="font-bold whitespace-pre-wrap">{error}</p>
           </div>
         )}
 

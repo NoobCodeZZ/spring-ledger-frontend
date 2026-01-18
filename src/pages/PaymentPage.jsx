@@ -11,6 +11,8 @@ const PaymentPage = () => {
     emiNumber: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,6 +21,8 @@ const PaymentPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setSuccessMsg('');
     
     try {
       const payload = {
@@ -27,13 +31,17 @@ const PaymentPage = () => {
         emiNumber: parseInt(formData.emiNumber)
       };
 
-      await axios.post('/v1/payment', payload);
+      const response = await axios.post('/v1/payment', payload);
+      setSuccessMsg(response.data || "Payment successful!");
       toast.success("Payment submitted successfully!");
       setFormData({ loanRefId: '', amount: '', emiNumber: '' }); // Reset form
     } catch (error) {
       console.error(error);
-      const msg = error.response?.data?.message || typeof error.response?.data === 'string' ? error.response?.data : "Payment failed";
-      toast.error(msg);
+      const backendMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response?.data : "");
+      const finalMsg = backendMsg || "Payment failed";
+      
+      setError(finalMsg);
+      toast.error("Payment failed");
     } finally {
       setLoading(false);
     }
@@ -53,6 +61,19 @@ const PaymentPage = () => {
             {loading ? 'Processing...' : 'SUBMIT PAYMENT'}
           </Button>
         </form>
+
+        {error && (
+          <div className="mt-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm animate-fade-in-up">
+            <p className="font-bold whitespace-pre-wrap">{error}</p>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mt-8 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl animate-fade-in-up">
+            <h3 className="text-green-800 dark:text-green-400 font-bold mb-2">Success!</h3>
+            <p className="text-green-700 dark:text-green-300 font-medium">{successMsg}</p>
+          </div>
+        )}
       </div>
     </div>
   );

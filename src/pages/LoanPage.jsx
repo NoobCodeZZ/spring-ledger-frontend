@@ -13,7 +13,8 @@ const LoanPage = () => {
     roi: ''
   });
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState('');
+  const [createdLoanId, setCreatedLoanId] = useState('');
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,23 +23,30 @@ const LoanPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setResult('');
+    setCreatedLoanId('');
+    setError('');
     
     try {
       const payload = {
-        ...formData,
+        bankRefId: formData.bankRefId,
+        userRefId: formData.userRefId,
         principal: parseFloat(formData.principal),
         years: parseInt(formData.years),
         roi: parseFloat(formData.roi)
       };
 
       const response = await axios.post('/v1/loan', payload);
-      setResult(response.data);
+      const loanId = response.data;
+      setCreatedLoanId(loanId);
       toast.success("Loan created successfully!");
     } catch (error) {
       console.error(error);
-      const msg = error.response?.data?.message || typeof error.response?.data === 'string' ? error.response?.data : "Failed to create loan";
-      toast.error(msg);
+      const backendMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response?.data : "");
+      // Removed status code display as requested
+      const finalMsg = backendMsg || "Failed to create loan";
+      
+      setError(finalMsg);
+      toast.error("Loan Creation failed");
     } finally {
       setLoading(false);
     }
@@ -63,11 +71,36 @@ const LoanPage = () => {
           </Button>
         </form>
 
-        {result && (
-          <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-xl animate-fade-in-up">
-            <h3 className="text-green-800 font-bold mb-2">Loan Created!</h3>
-            <p className="text-green-700 break-all font-mono bg-green-100/50 p-3 rounded-lg border border-green-200">{result}</p>
-            <p className="text-xs text-green-600 mt-2">* Please save this reference ID.</p>
+        {error && (
+          <div className="mt-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm animate-fade-in-up">
+            <p className="font-bold whitespace-pre-wrap">{error}</p>
+          </div>
+        )}
+
+        {createdLoanId && (
+          <div className="mt-8 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl animate-fade-in-up">
+            <h3 className="text-green-800 dark:text-green-400 font-bold mb-2">Loan Created!</h3>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold text-green-700 dark:text-green-500 uppercase tracking-wider">Loan Reference ID:</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-800 border border-green-200 dark:border-green-800 rounded-lg">
+              <code className="flex-1 text-green-900 dark:text-green-100 font-mono font-bold break-all">
+                {createdLoanId}
+              </code>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(createdLoanId);
+                  toast.info("Copied to clipboard!");
+                }}
+                className="p-1.5 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/40 rounded transition-colors"
+                title="Copy to clipboard"
+              >
+                <span className="text-xs font-bold px-1 uppercase">Copy</span>
+              </button>
+            </div>
+            <p className="text-sm text-green-700 dark:text-green-400 mt-4 italic font-medium">
+              * Please store this loan reference ID somewhere safe. You will need it for payments and balance checks.
+            </p>
           </div>
         )}
       </div>
