@@ -79,7 +79,7 @@ const BalancePage = () => {
 
         {balance !== null && (
           <div className="mt-8 p-6 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 rounded-xl text-center">
-            <h3 className="text-blue-800 dark:text-blue-400 font-medium mb-2 uppercase tracking-wide text-sm">Outstanding Balance</h3>
+
             <p className="text-4xl font-extrabold text-blue-900 dark:text-blue-200">
                 {typeof balance === 'object' ? JSON.stringify(balance) : balance}
             </p>
